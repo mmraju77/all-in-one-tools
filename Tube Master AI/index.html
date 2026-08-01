@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tube Master AI | The 1-Click Faceless Channel Engine</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Reset & Variables */
+        :root {
+            --bg-color: #0F172A; /* Slate 900 */
+            --surface-color: #1E293B; /* Slate 800 */
+            --primary-color: #3B82F6; /* Blue 500 */
+            --primary-hover: #2563EB; /* Blue 600 */
+            --accent-color: #8B5CF6; /* Violet 500 */
+            --text-main: #F8FAFC; /* Slate 50 */
+            --text-muted: #94A3B8; /* Slate 400 */
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- Global Animations --- */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        /* --- Navigation --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 2rem;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .btn-login {
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-main);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 8rem 5% 4rem;
+            position: relative;
+        }
+
+        /* Subtle background glow */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .badge {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            max-width: 900px;
+            letter-spacing: -1px;
+            animation: fadeUp 1s ease forwards;
+            opacity: 0;
+            animation-delay: 0.1s;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, #F8FAFC, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin-bottom: 3rem;
+            animation: fadeUp 1s ease forwards;
+            opacity: 0;
+            animation-delay: 0.2s;
+        }
+
+        .hero-cta {
+            background: linear-gradient(135deg, var(--primary-color), #2563EB);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: fadeUp 1s ease forwards, pulseGlow 3s infinite;
+            opacity: 0;
+            animation-delay: 0.3s;
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px -5px rgba(59, 130, 246, 0.6);
+        }
+
+        /* --- Dashboard Preview / Mockup --- */
+        .dashboard-mockup {
+            width: 100%;
+            max-width: 1100px;
+            height: 600px;
+            background: var(--surface-color);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            margin-top: 4rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            overflow: hidden;
+            animation: fadeUp 1s ease forwards;
+            opacity: 0;
+            animation-delay: 0.5s;
+            position: relative;
+        }
+
+        /* Mockup Glassmorphism Header */
+        .mockup-header {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 40px;
+            background: rgba(15, 23, 42, 0.5);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+        }
+        
+        .mockup-dots {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-red { background: #EF4444; }
+        .dot-yellow { background: #F59E0B; }
+        .dot-green { background: #10B981; }
+
+        /* Mockup Sidebar */
+        .mockup-sidebar {
+            width: 250px;
+            background: rgba(15, 23, 42, 0.8);
+            border-right: 1px solid var(--border-color);
+            padding: 60px 20px 20px;
+        }
+
+        .mockup-nav-item {
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .mockup-nav-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+        }
+
+        /* Mockup Main Content */
+        .mockup-content {
+            flex: 1;
+            padding: 80px 40px 40px;
+            background: var(--surface-color);
+        }
+
+        .mockup-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .mockup-card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .mockup-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            height: 180px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-img-placeholder {
+            width: 100%;
+            height: 90px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .card-text-line {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            width: 80%;
+        }
+        .card-text-line.short { width: 40%; margin-top: 5px; }
+
+        /* --- Features Section --- */
+        .features {
+            padding: 8rem 5%;
+            background: var(--bg-color);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #F8FAFC, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-title p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            padding: 1rem;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            color: var(--primary-color);
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* --- Pricing Section --- */
+        .pricing {
+            padding: 6rem 5% 8rem;
+            background: linear-gradient(180deg, var(--bg-color) 0%, rgba(15, 23, 42, 0.95) 100%);
+        }
+
+        .pricing-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            width: 350px;
+            text-align: left;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .pricing-card.popular {
+            border: 2px solid var(--primary-color);
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.3);
+            background: linear-gradient(180deg, var(--surface-color) 0%, rgba(30, 41, 59, 0.8) 100%);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .pricing-card.popular:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .pricing-card h3 {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .plan-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            min-height: 40px;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 3rem;
+        }
+
+        .plan-features li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 15px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .plan-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .pricing-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-solid {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .pricing-solid:hover {
+            background: var(--primary-hover);
+        }
+
+        .pricing-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .pricing-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-muted);
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .dashboard-mockup { height: 400px; flex-direction: column; }
+            .mockup-sidebar { display: none; }
+            .mockup-content { padding: 60px 20px; }
+            .mockup-card-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">TubeMaster.AI</div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+        </div>
+        <div>
+            <button class="btn-login">Login</button>
+            <button class="btn-login" style="background: var(--text-main); color: var(--bg-color); border: none; margin-left: 10px;">Start Free Trial</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="badge">V2 Model Just Released 🚀</div>
+        <h1><span>The 1-Click Engine for</span><br>Faceless YouTube Empires</h1>
+        <p>Generate hyper-viral scripts, sync ultra-realistic AI voiceovers, and render 4K cinematic b-roll in 90 seconds. Zero video editing skills required.</p>
+        <button class="hero-cta">Build Your First Channel Free</button>
+
+        <div class="dashboard-mockup">
+            <div class="mockup-header">
+                <div class="mockup-dots">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+            </div>
+            <div class="mockup-sidebar">
+                <div class="mockup-nav-item active">🎬 Script Vault</div>
+                <div class="mockup-nav-item">🔊 Voice Models</div>
+                <div class="mockup-nav-item">📊 Competitor Spy</div>
+                <div class="mockup-nav-item">🎨 Brand Kits</div>
+                <br><br><br>
+                <div class="mockup-nav-item" style="color:rgba(255,255,255,0.3)">⚙️ Settings</div>
+            </div>
+            <div class="mockup-content">
+                <h2 class="mockup-title">Recent Generations</h2>
+                <div class="mockup-card-grid">
+                    <div class="mockup-card">
+                        <div class="card-img-placeholder" style="background: linear-gradient(45deg, #1e3a8a, #312e81);"></div>
+                        <div class="card-text-line"></div>
+                        <div class="card-text-line short"></div>
+                    </div>
+                    <div class="mockup-card">
+                        <div class="card-img-placeholder" style="background: linear-gradient(45deg, #064e3b, #065f46);"></div>
+                        <div class="card-text-line"></div>
+                        <div class="card-text-line short"></div>
+                    </div>
+                    <div class="mockup-card">
+                        <div class="card-img-placeholder" style="background: linear-gradient(45deg, #701a75, #831843);"></div>
+                        <div class="card-text-line"></div>
+                        <div class="card-text-line short"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= FEATURES SECTION ======= -->
+    <section id="features" class="features">
+        <div class="section-title">
+            <h2>The Only Tool Stack You Need</h2>
+            <p>We consolidated $500/mo worth of AI subscriptions into one seamless, 1-click workflow.</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>The Script Vault</h3>
+                <p>Generate high-RPM scripts with psychological Hooks. A/B tested to maximize Audience Retention.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎙️</div>
+                <h3>Hyper-Realistic Voice</h3>
+                <p>150+ languages with emotion-pacing. The AI automatically whispers during secrets and raises volume for the CTA.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">👁️</div>
+                <h3>Neuro-Thumbnails</h3>
+                <p>Strict color palettes with AI Heatmap CTR prediction. Know your thumbnail will get clicked before you upload.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎬</div>
+                <h3>Cinematic Generator</h3>
+                <p>Consistent 4k b-roll. Our prompt-injection engine ensures the AI images match the script narration perfectly.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">✂️</div>
+                <h3>1-Click Auto-Editor</h3>
+                <p>Automatically syncs images to audio, strips dead silence, and generates dynamic Alex Hormozi style subtitles.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🕵️</div>
+                <h3>Competitor Spy</h3>
+                <p>Paste a channel URL to find their viral gaps. We tell you exactly what topic to make your next video about.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= PRICING SECTION ======= -->
+    <section id="pricing" class="pricing">
+        <div class="section-title">
+            <h2>Start Building Your Empire</h2>
+            <p>Simple token economics. Cancel anytime. No hidden fees.</p>
+        </div>
+
+        <div class="pricing-container">
+            <!-- Plan 1 -->
+            <div class="pricing-card">
+                <h3>Starter</h3>
+                <div class="price">$29<span>/mo</span></div>
+                <p class="plan-desc">For beginners launching their first faceless channel.</p>
+                <ul class="plan-features">
+                    <li>150 AI Credits / month</li>
+                    <li>Script Vault Access</li>
+                    <li>Standard API Image Gen</li>
+                    <li>DeepL Translations</li>
+                </ul>
+                <button class="pricing-btn pricing-outline">Start Free Trial</button>
+            </div>
+
+            <!-- Plan 2 (Highlighted) -->
+            <div class="pricing-card popular">
+                <div class="popular-badge">Most Popular</div>
+                <h3>Pro Automation</h3>
+                <div class="price">$79<span>/mo</span></div>
+                <p class="plan-desc">For creators managing multiple Monetized channels.</p>
+                <ul class="plan-features">
+                    <li>500 AI Credits / month</li>
+                    <li>Hyper-Realistic Voice (ElevenLabs)</li>
+                    <li>Heatmap CTR Predictor</li>
+                    <li>Competitor Trend Analyzer</li>
+                    <li>Priority Generation Queue</li>
+                </ul>
+                <button class="pricing-btn pricing-solid">Upgrade to Pro</button>
+            </div>
+
+            <!-- Plan 3 -->
+            <div class="pricing-card">
+                <h3>Elite Agency</h3>
+                <div class="price">$199<span>/mo</span></div>
+                <p class="plan-desc">For high-volume cash cow factories scaling to $50k/mo.</p>
+                <ul class="plan-features">
+                    <li>1,500 AI Credits / month</li>
+                    <li>1-Click Auto-Editor (Creatomate)</li>
+                    <li>Cinematic 4K Video (Runway)</li>
+                    <li>Dedicated Server Resources</li>
+                    <li>24/7 Slack Support</li>
+                </ul>
+                <button class="pricing-btn pricing-outline">Get Elite</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Tube Master AI. Built for the modern creator.</p>
+    </footer>
+
+</body>
+</html>
