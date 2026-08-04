@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --------------------------------------
+// User Model
+// --------------------------------------
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  name          String?
+  avatarUrl     String?
+  isPro         Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  ratings       ToolRating[]
+  savedTools    SavedTool[]
+}
+
+// --------------------------------------
+// Tool Rating Model
+// --------------------------------------
+model ToolRating {
+  id        String   @id @default(uuid())
+  toolSlug  String   
+  rating    Int      
+  createdAt DateTime @default(now())
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([toolSlug])
+}
+
+// --------------------------------------
+// Saved Tools Model
+// --------------------------------------
+model SavedTool {
+  id        String   @id @default(uuid())
+  toolSlug  String   
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, toolSlug]) 
+  @@index([userId])
+}
