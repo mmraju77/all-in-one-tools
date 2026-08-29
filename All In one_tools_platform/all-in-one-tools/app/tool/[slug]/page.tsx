@@ -1,165 +1,127 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ArrowLeft, Star, Share2, Bookmark, StarHalf, Zap } from "lucide-react";
-import Link from "next/link";
-import UserRating from "@/components/tools/UserRating";
+import { Metadata } from "next";
+import { Shield, Zap, HelpCircle, AlertCircle } from "lucide-react";
+import RelatedTools from "@/components/shared/RelatedTools";
+import ToolWorkspace from "@/components/tools/ToolWorkspace";
+import { allToolsList } from "@/lib/all-tools";
 
-export default async function ToolPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
-  const slug = resolvedParams.slug || "";
-  const toolName = slug.replace(/-/g, " ").toUpperCase();
+  const slug = resolvedParams.slug || "tool";
+  const toolName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  
+  return {
+    title: `${toolName} - Free Online Tool | Multi Tools Engine Platform`,
+    description: `Use our free online ${toolName} to boost your productivity. No downloads required, 100% secure, and lightning fast.`,
+  };
+}
+
+export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug || "tool";
+  
+  const foundTool = allToolsList.find(t => t.slug.toLowerCase() === slug.toLowerCase());
+  const toolName = foundTool ? foundTool.name : slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const toolCategory = foundTool ? foundTool.category : "AI Tools";
+
+  // Dynamic Disclaimer Logic based on Category
+  let disclaimerTitle = "General Tool Disclaimer";
+  let disclaimerText = `The ${toolName.toLowerCase()} provides estimations, calculations, and AI-generated text/code. It is strictly NOT intended to replace professional advice, certified enterprise software, or human verification. Always verify critical data before use in production environments.`;
+
+  if (toolCategory.includes("Medical") || toolCategory.includes("Health") || toolCategory.includes("Nutrition") || toolCategory.includes("Fitness") || toolCategory.includes("Parenting") || (toolCategory.includes("Healthcare") && !toolCategory.includes("Administration"))) {
+      disclaimerTitle = "Health & Medical Disclaimer";
+      disclaimerText = `This ${toolName.toLowerCase()} is for educational and utility purposes only. It is NOT a substitute for professional medical, clinical diagnosis, veterinary, pediatric, or certified fitness advice. Always consult a qualified professional.`;
+  } else if (toolCategory.includes("Finance") || toolCategory.includes("Tax") || toolCategory.includes("Crypto") || toolCategory.includes("Stock") || toolCategory.includes("Banking") || toolCategory.includes("Insurance") || toolCategory.includes("Payroll") || toolCategory.includes("Compensation") || toolCategory.includes("Procurement") || toolCategory.includes("Purchasing")) {
+      disclaimerTitle = "Financial, HR & Procurement Disclaimer";
+      disclaimerText = `The calculations provided by the ${toolName.toLowerCase()} are for informational purposes only and do not constitute financial, investment, accounting, binding insurance offers, official payroll execution, or tax advice. Please consult a certified professional.`;
+  } else if (toolCategory.includes("Legal") || toolCategory.includes("Compliance") || toolCategory.includes("Government") || toolCategory.includes("Governance")) {
+      disclaimerTitle = "Legal & Compliance Disclaimer";
+      disclaimerText = `The generated templates, frameworks, and compliance checks are for informational and guidance purposes only. They do NOT constitute legal advice. Please consult with a qualified attorney or legal counsel.`;
+  } else if (toolCategory.includes("Cybersecurity") || toolCategory.includes("Security") || toolCategory.includes("Identity") || toolCategory.includes("Access")) {
+      disclaimerTitle = "Security & IAM Disclaimer";
+      disclaimerText = `The ${toolName.toLowerCase()} provides generic security assessments, IAM matrices, and compliance checks. It is NOT intended to replace certified penetration testing, enterprise auditing, or legal compliance checks.`;
+  } else if (toolCategory.includes("Facility") || toolCategory.includes("Manufacturing") || toolCategory.includes("IoT") || toolCategory.includes("Engineering") || toolCategory.includes("Supply Chain") || toolCategory.includes("Logistics")) {
+       disclaimerTitle = "Industrial & Operations Disclaimer";
+       disclaimerText = `The ${toolName.toLowerCase()} provides generic estimations and planning metrics. It is strictly NOT intended to replace rigorous physical testing, certified ERP/WMS systems, or official equipment specifications.`;
+  } else if (toolCategory.includes("Public Relations") || toolCategory.includes("Media")) {
+       disclaimerTitle = "PR & Media Communications Disclaimer";
+       disclaimerText = `The ${toolName.toLowerCase()} provides generic templates and strategies. Please review all communications for brand consistency and legal compliance before public or media distribution.`;
+  } else if (toolCategory.includes("Product Management")) {
+       disclaimerTitle = "Product Strategy Disclaimer";
+       disclaimerText = `The ${toolName.toLowerCase()} provides product ideation, roadmapping, and estimations. All generated requirements or scores should be validated against actual user data and business capabilities before execution.`;
+  } else if (toolCategory.includes("Project Management")) {
+       disclaimerTitle = "Project Management & Delivery Disclaimer";
+       disclaimerText = `The ${toolName.toLowerCase()} provides generic project timelines, effort estimations, and critical path calculations. It is intended for planning purposes and should be aligned with team velocity and actual constraints.`;
+  } else if (toolCategory.includes("Consulting") || toolCategory.includes("Professional Services")) {
+       disclaimerTitle = "Consulting & Professional Services Disclaimer";
+       disclaimerText = `The ${toolName.toLowerCase()} provides generic business estimations, pricing models, and proposal frameworks. It is strictly NOT intended to replace formal legally-binding contracts or certified accounting/legal advice. Always review terms with a qualified professional.`;
+  } else if (toolCategory.includes("Retail Operations")) {
+       disclaimerTitle = "Retail & Store Operations Disclaimer";
+       disclaimerText = `The ${toolName.toLowerCase()} provides generic store operations estimations, retail math calculations, and planning metrics. It is strictly NOT intended to replace certified point-of-sale (POS) systems, official inventory management software, or professional financial advice. Always verify data against actual store records.`;
+  } else if (toolCategory.includes("Hospitality") || toolCategory.includes("Restaurant") || toolCategory.includes("Healthcare Administration")) {
+       disclaimerTitle = "Hospitality & Operations Disclaimer";
+       disclaimerText = `The ${toolName.toLowerCase()} provides generic operational estimations, recipe costing, and planning metrics. It is strictly NOT intended to replace certified point-of-sale (POS) systems, official inventory/medical administration software, or professional health/safety advice. Always verify data against actual operational records.`;
+  }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-8 space-y-10 min-h-screen">
-      
-      {/* 1. Breadcrumb & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <Link
-          href="/"
-          className="text-slate-400 hover:text-white flex items-center gap-2 text-sm transition-colors w-fit"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Categories
-        </Link>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 h-9"
-          >
-            <Bookmark className="h-4 w-4 mr-2" /> Save
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 h-9"
-          >
-            <Share2 className="h-4 w-4 mr-2" /> Share
-          </Button>
-        </div>
-      </div>
-
-      {/* 2. Enhanced Dynamic Tool Header with Ratings */}
-      <div className="space-y-6 text-center md:text-left">
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-          <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 text-transparent bg-clip-text">
-            {toolName}
-          </span>
-        </h1>
-        
-        <p className="text-slate-400 text-lg md:text-xl max-w-2xl font-medium mx-auto md:mx-0">
-          Premium {toolName.toLowerCase()} tool to boost your productivity. Fast, secure, and running entirely on the edge.
-        </p>
-
-        {/* 🌟 Global Star Rating UI */}
-        <div className="flex items-center justify-center md:justify-start gap-3 pt-2">
-          <div className="flex items-center text-yellow-500">
-            <Star className="h-5 w-5 fill-yellow-500" />
-            <Star className="h-5 w-5 fill-yellow-500" />
-            <Star className="h-5 w-5 fill-yellow-500" />
-            <Star className="h-5 w-5 fill-yellow-500" />
-            <StarHalf className="h-5 w-5 fill-yellow-500" />
-          </div>
-          <span className="text-slate-200 font-bold text-sm">4.8/5</span>
-          <span className="text-slate-500 text-sm font-medium">(1,284 ratings)</span>
-        </div>
-      </div>
-
-      {/* 3. The Universal Tool Workspace */}
-      <Card className="w-full min-h-[450px] bg-[#1e293b] border-slate-700/50 rounded-2xl flex flex-col items-center justify-center p-8 shadow-2xl relative overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(-45deg, transparent, transparent 10px, #334155 10px, #334155 20px)",
-          }}
-        />
-
-        <div className="text-slate-400 text-center space-y-6 relative z-10">
-          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full flex items-center justify-center mb-6 border border-blue-500/20 shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)]">
-            <Zap className="h-10 w-10 text-cyan-400" />
-          </div>
-          <h2 className="text-3xl font-bold text-white">Interactive Workspace</h2>
-          <p className="text-base max-w-md mx-auto text-slate-400">
-            This is the dynamic container. Based on the URL, the exact logic for{" "}
-            <strong className="text-cyan-400">{toolName}</strong> will be injected right here without reloading the page.
+    <div className="min-h-screen bg-[#0f172a] text-slate-300 py-12 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4">{toolName}</h1>
+          <p className="text-slate-400 max-w-2xl mx-auto mb-6">
+            Free, fast, and secure online {toolName.toLowerCase()}. Process your data locally in your browser.
           </p>
-          <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white mt-6 h-12 px-10 rounded-full font-bold text-lg shadow-lg hover:shadow-cyan-500/25 transition-all">
-            Execute Tool Action
-          </Button>
+          <div className="flex items-center justify-center gap-6 text-sm text-slate-500 border-t border-slate-800/50 pt-6 max-w-lg mx-auto">
+            <span className="flex items-center gap-1.5"><Shield className="h-4 w-4 text-emerald-500" /> 100% Secure</span>
+            <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-yellow-500" /> Lightning Fast</span>
+            <span className="flex items-center gap-1.5 text-white font-medium">Rating: 4.9/5</span>
+          </div>
         </div>
-      </Card>
 
-      {/* 🌟 New Interactive User Rating Component */}
-      <UserRating toolName={toolName} />
+        {/* 🚀 New Tool Workspace (Contains the new Rating and How to Use sections) */}
+        <ToolWorkspace toolName={toolName} slug={slug} category={toolCategory} />
 
-      {/* 4. Enhanced SEO & Programmatic Content Section */}
-      <div className="grid md:grid-cols-3 gap-8 pt-6 border-t border-slate-800/60 mt-12">
-        <div className="md:col-span-2 space-y-8">
-          <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-              How to use this <span className="text-cyan-400">{toolName.toLowerCase()}</span>
-            </h3>
-            <p className="leading-relaxed text-slate-300 text-lg">
-              Our micro-tool architecture ensures that every utility is highly optimized and user-friendly. Simply input your data in the workspace above, and our system will process it instantly. No data is sent to our servers unless explicitly stated, ensuring maximum privacy.
+        {/* Dynamic Disclaimer */}
+        <div className="mb-12 p-6 bg-amber-500/10 border border-amber-500/20 rounded-3xl flex items-start gap-4">
+          <AlertCircle className="h-6 w-6 text-amber-400 shrink-0 mt-1" />
+          <div>
+            <h4 className="text-amber-300 font-bold mb-2 text-lg">{disclaimerTitle}</h4>
+            <p className="text-sm text-amber-200/80 leading-relaxed">
+              {disclaimerText}
             </p>
           </div>
-          
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-white">Why choose our platform?</h3>
-            <ul className="space-y-3 text-slate-300">
-              <li className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-cyan-400" />
-                Lightning fast execution
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-blue-400" />
-                100% Free to use for personal projects
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-emerald-400" />
-                Enterprise-grade security and privacy
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-purple-400" />
-                No registration required for basic features
-              </li>
-            </ul>
+        </div>
+
+        {/* 5 FAQs SECTION */}
+        <div className="mb-16 bg-slate-900 border border-slate-800 p-8 rounded-3xl">
+          <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-2">
+            <HelpCircle className="h-6 w-6 text-blue-400" /> Frequently Asked Questions
+          </h3>
+          <div className="space-y-6">
+            <div className="border-b border-slate-800 pb-5">
+              <h4 className="text-lg font-semibold text-slate-200 mb-2">1. Is this {toolName} free to use?</h4>
+              <p className="text-sm text-slate-400 leading-relaxed">Yes, this tool is completely free to use with no hidden charges, mandatory sign-ups, or artificial limits.</p>
+            </div>
+            <div className="border-b border-slate-800 pb-5">
+              <h4 className="text-lg font-semibold text-slate-200 mb-2">2. Do I need to download or install any software?</h4>
+              <p className="text-sm text-slate-400 leading-relaxed">No, everything operates directly inside your web browser. No software installation, app download, or extension is required.</p>
+            </div>
+            <div className="border-b border-slate-800 pb-5">
+              <h4 className="text-lg font-semibold text-slate-200 mb-2">3. Is my input data secure and private?</h4>
+              <p className="text-sm text-slate-400 leading-relaxed">Absolutely. All data processing and calculations are performed locally in your browser or through encrypted connections without storing your private data.</p>
+            </div>
+            <div className="border-b border-slate-800 pb-5">
+              <h4 className="text-lg font-semibold text-slate-200 mb-2">4. How accurate are the results provided by {toolName}?</h4>
+              <p className="text-sm text-slate-400 leading-relaxed">Our platform uses verified algorithmic calculations, industry-standard formulas, and AI models to ensure high technical precision and accuracy.</p>
+            </div>
+            <div className="border-b border-slate-800 pb-5">
+              <h4 className="text-lg font-semibold text-slate-200 mb-2">5. Can I copy or download my output results?</h4>
+              <p className="text-sm text-slate-400 leading-relaxed">Yes! You can instantly copy the calculated output to your clipboard or download it as a formatted file using the dedicated action buttons in the workspace.</p>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-6 bg-slate-800/30 p-8 rounded-2xl border border-slate-700/50 shadow-lg h-fit">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2 pb-2 border-b border-slate-700/50">
-            Related Utilities
-          </h3>
-          <ul className="space-y-4 text-sm font-medium">
-            <li>
-              <Link href="/tool/pdf-merge" className="text-slate-300 hover:text-cyan-400 transition-colors flex items-center justify-between">
-                PDF Merge Pro <span className="text-slate-600">→</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/tool/json-formatter" className="text-slate-300 hover:text-cyan-400 transition-colors flex items-center justify-between">
-                JSON Formatter <span className="text-slate-600">→</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/tool/seo-analyzer" className="text-slate-300 hover:text-cyan-400 transition-colors flex items-center justify-between">
-                SEO Analyzer <span className="text-slate-600">→</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/tool/image-compressor" className="text-slate-300 hover:text-cyan-400 transition-colors flex items-center justify-between">
-                Image Compressor <span className="text-slate-600">→</span>
-              </Link>
-            </li>
-          </ul>
-        </div>
+        <RelatedTools category={toolCategory} currentSlug={slug} />
       </div>
-      
     </div>
   );
 }

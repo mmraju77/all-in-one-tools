@@ -3,56 +3,34 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
 
-export default function UserRating({ toolName }: { toolName: string }) {
-  const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleRating = (currentRating: number) => {
-    setRating(currentRating);
-    setSubmitted(true);
-    // భవిష్యత్తులో ఈ రేటింగ్ ని మనం డేటాబేస్ (Supabase) కి పంపిస్తాం
-  };
+export default function UserRating() {
+  const [rating, setRating] = useState(4); 
+  const [hoverRating, setHoverRating] = useState(0);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center py-6 mt-4 border border-slate-800/50 bg-slate-900/30 rounded-2xl shadow-inner">
-      {!submitted ? (
-        <>
-          <p className="text-slate-400 font-medium mb-3">Rate your experience with {toolName}</p>
-          <div className="flex items-center gap-2">
-            {[...Array(5)].map((_, index) => {
-              const currentRating = index + 1;
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  className="transition-transform hover:scale-110 focus:outline-none"
-                  onClick={() => handleRating(currentRating)}
-                  onMouseEnter={() => setHover(currentRating)}
-                  onMouseLeave={() => setHover(0)}
-                >
-                  <Star
-                    className={`h-8 w-8 transition-colors duration-200 ${
-                      currentRating <= (hover || rating)
-                        ? "fill-yellow-500 text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]"
-                        : "text-slate-600 hover:text-yellow-400"
-                    }`}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        </>
-      ) : (
-        <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
-          <div className="flex items-center gap-1 text-yellow-500 mb-2">
-            {[...Array(rating)].map((_, i) => (
-              <Star key={i} className="h-6 w-6 fill-yellow-500" />
-            ))}
-          </div>
-          <p className="text-emerald-400 font-bold text-lg">Thank you for your feedback!</p>
-        </div>
-      )}
+    <div className="flex flex-col items-center justify-center gap-4 w-full">
+      <div className="flex items-center justify-center gap-2 w-full">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            onClick={() => setRating(star)}
+            onMouseEnter={() => setHoverRating(star)}
+            onMouseLeave={() => setHoverRating(0)}
+            className="transition-transform hover:scale-110 focus:outline-none"
+          >
+            <Star
+              className={`h-9 w-9 transition-colors ${
+                (hoverRating || rating) >= star
+                  ? "fill-orange-400 text-orange-400"
+                  : "text-slate-700"
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+      <p className="text-sm text-slate-400 font-medium mt-2 bg-slate-950 px-4 py-2 rounded-full border border-slate-800">
+        Your rating: <span className="text-white font-bold">{rating || hoverRating} / 5</span>
+      </p>
     </div>
   );
 }

@@ -1,0 +1,6 @@
+{
+    "github.copilot.chat.summarizeAgentConversationHistory.enabled": false,
+    "notebook.compactView": false,
+    "scm.compactFolders": false,
+    "explorer.compactFolders": false
+}
