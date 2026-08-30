@@ -106,7 +106,7 @@ export default function PricingPage() {
                 if (typeof window !== "undefined" && (window as any).Paddle) {
                   (window as any).Paddle.Checkout.open({
                     items: [{ 
-                      priceId: isYearly ? "pri_01m12c704areedkhqh5as8m4n" : "pri_01m12byc7759j6krwq452tceqr", 
+                      priceId: isYearly ? "pri_01m12c704areedkhrqh5as8m4n" : "pri_01m12byc7759j6krwq452tceqr", 
                       quantity: 1 
                     }]
                   });
