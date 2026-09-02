@@ -18,9 +18,15 @@ export default function PricingPage() {
         strategy="afterInteractive"
         onLoad={() => {
           if (typeof window !== "undefined" && (window as any).Paddle) {
-            (window as any).Paddle.Environment.set("sandbox"); // Fix applied here
+            (window as any).Paddle.Environment.set("sandbox");
             (window as any).Paddle.Initialize({ 
-              token: "test_b2f1904f50111af44079f9d565c"
+              token: "test_b2f1904f50111af44079f9d565c",
+              // మీరు అడిగిన విధంగా 'pro tools work space' పేజీకి రీడైరెక్ట్ లాజిక్ 👇
+              eventCallback: function(data: any) {
+                if (data.name === "checkout.completed") {
+                  window.location.href = "/pro-tools-workspace"; 
+                }
+              }
             });
           }
         }}
@@ -100,7 +106,7 @@ export default function PricingPage() {
               <div className="flex items-start gap-3"><Check className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" /><span className="text-slate-300 text-sm">100% Ad-free clean experience</span></div>
             </div>
 
-            {/* Payment Button - Opens Checkout immediately */}
+            {/* Payment Button */}
             <div
               onClick={() => {
                 if (typeof window !== "undefined" && (window as any).Paddle) {
