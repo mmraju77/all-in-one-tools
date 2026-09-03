@@ -21,10 +21,10 @@ export default function PricingPage() {
             (window as any).Paddle.Environment.set("sandbox");
             (window as any).Paddle.Initialize({ 
               token: "test_b2f1904f50111af44079f9d565c",
-              // మీరు అడిగిన విధంగా 'pro tools work space' పేజీకి రీడైరెక్ట్ లాజిక్ 👇
+              // Redirect logic after successful payment
               eventCallback: function(data: any) {
                 if (data.name === "checkout.completed") {
-                  window.location.href = "/pro-tools-workspace"; 
+                  window.location.href = "/"; 
                 }
               }
             });
