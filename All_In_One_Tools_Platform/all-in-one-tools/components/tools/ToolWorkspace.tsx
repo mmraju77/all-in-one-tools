@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
 import { 
   Undo2, Redo2, Keyboard, Copy, Download, Lock, Sparkles, Wand2, Loader2, Calculator, 
   DollarSign, Globe2, Layers, Scissors, FileCheck, ShieldCheck, Code2, Terminal, Cpu, 
@@ -182,6 +183,39 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
 
   const { input, dynamicValues } = history.present;
   const [activeAction, setActiveAction] = useState<string>("");
+  const [userIsPro, setUserIsPro] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+
+  useEffect(() => {
+    const verifyProStatus = async () => {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user && user.email) {
+          const { data, error } = await supabase
+            .from("User")
+            .select("isPro")
+            .eq("email", user.email)
+            .single();
+
+          if (data && data.isPro) {
+            setUserIsPro(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error verifying Pro status:", error);
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+
+    verifyProStatus();
+  }, []);
 
   const updateFormState = (updates: Partial<HistorySnapshot>) => {
     setHistory(curr => {
@@ -257,7 +291,6 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
     const isMediaTool = !!(safeCategory.match(/image|photo|pic|video|camera/i) || safeSlug.match(/image|photo|pic|video|camera/i));
     const finalAction = activeAction || acts[0] || "Process Data";
     
-    // 🌟 DYNAMIC IMAGE/VIDEO PREVIEW & STATS LOGIC
     if (isMediaTool && selectedFile && (selectedFile.type.startsWith("image/") || selectedFile.type.startsWith("video/"))) {
        
        const isImage = selectedFile.type.startsWith("image/");
@@ -311,7 +344,6 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
        return; 
     }
 
-    // 🚀 ULTRA-STRICT AI LOGIC FOR ALL 10,000 TOOLS
     setOutput(`Processing request and generating response in ${language}...\n\nPlease wait a few seconds.`);
     try {
       let dynamicInputString = "";
@@ -372,7 +404,16 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
     window.addEventListener('keydown', handleKeyDown); return () => window.removeEventListener('keydown', handleKeyDown);
   }, [history, isGenerating, language, currency, selectedFile, activeAction]); 
 
-  if (isProTool) {
+  if (isProTool && isCheckingStatus) {
+    return (
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-8 lg:p-12 mb-12 max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden">
+        <Loader2 className="h-12 w-12 text-purple-500 animate-spin mb-4" />
+        <p className="text-slate-400 font-medium animate-pulse">Verifying Pro Status...</p>
+      </div>
+    );
+  }
+
+  if (isProTool && !userIsPro) {
     return (
       <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-8 lg:p-12 mb-12 max-w-4xl mx-auto flex flex-col items-center text-center relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-purple-600/20 blur-[100px] rounded-full pointer-events-none"></div><div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-blue-600/20 blur-[100px] rounded-full pointer-events-none"></div>
