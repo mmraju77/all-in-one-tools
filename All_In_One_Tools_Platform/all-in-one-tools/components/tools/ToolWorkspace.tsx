@@ -183,32 +183,60 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
 
   const { input, dynamicValues } = history.present;
   const [activeAction, setActiveAction] = useState<string>("");
+  
+  // 🚀 Pro Locking States & Debugger
   const [userIsPro, setUserIsPro] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [debugMsg, setDebugMsg] = useState("Initializing Diagnostic Scanner...");
 
   useEffect(() => {
     const verifyProStatus = async () => {
       try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-
-        const { data: { user } } = await supabase.auth.getUser();
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
         
-        if (user && user.email) {
-          const { data, error } = await supabase
-            .from("User")
-            .select("isPro")
-            .eq("email", user.email)
-            .single();
-
-          if (data && data.isPro) {
-            setUserIsPro(true);
-          }
+        if (!url || !key) {
+          setDebugMsg("ERROR: ENV Variables (NEXT_PUBLIC_SUPABASE_URL or KEY) are missing in this component.");
+          setIsCheckingStatus(false);
+          return;
         }
-      } catch (error) {
-        console.error("Error verifying Pro status:", error);
+
+        const supabase = createClient(url, key);
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          setDebugMsg(`SESSION ERROR: ${sessionError.message}`);
+          setIsCheckingStatus(false);
+          return;
+        }
+
+        if (!session || !session.user) {
+          setDebugMsg("ERROR: No active user session found client-side. The app doesn't know you are logged in.");
+          setIsCheckingStatus(false);
+          return;
+        }
+
+        const userEmail = session.user.email;
+        const { data, error } = await supabase
+          .from("User")
+          .select("isPro")
+          .eq("email", userEmail)
+          .single();
+
+        if (error) {
+          setDebugMsg(`DB ERROR: ${error.message} (Email checked: ${userEmail})`);
+        } else if (data) {
+          if (data.isPro === true || data.isPro === "true") {
+            setUserIsPro(true); // 🔓 Unlock immediately!
+            setDebugMsg(`SUCCESS: Account is Pro. Unlocking...`);
+          } else {
+            setDebugMsg(`STATUS: Account found, but 'isPro' is set to FALSE (Email: ${userEmail})`);
+          }
+        } else {
+          setDebugMsg(`DB ERROR: No record found in "User" table for ${userEmail}`);
+        }
+      } catch (err: any) {
+        setDebugMsg(`SYSTEM CATCH ERROR: ${err.message}`);
       } finally {
         setIsCheckingStatus(false);
       }
@@ -413,6 +441,7 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
     );
   }
 
+  // 🔴 🔒 LOCKED SCREEN & DIAGNOSTIC SCANNER
   if (isProTool && !userIsPro) {
     return (
       <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-8 lg:p-12 mb-12 max-w-4xl mx-auto flex flex-col items-center text-center relative overflow-hidden">
@@ -420,14 +449,28 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
         <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 mb-6 relative z-10 shadow-2xl shadow-purple-900/20"><Lock className="h-10 w-10 text-purple-400" /></div>
         <h3 className="text-3xl md:text-4xl font-extrabold text-white mb-4 relative z-10">Unlock <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">{safeToolName}</span></h3>
         <p className="text-slate-400 mb-10 max-w-2xl text-base md:text-lg leading-relaxed relative z-10">This is a premium utility. Upgrade to a Pro subscription to access this tool.</p>
+        
         <div className="grid md:grid-cols-2 gap-6 w-full max-w-3xl relative z-10">
           <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 transition-all flex flex-col h-full text-left"><h4 className="text-lg font-bold text-white mb-2">Monthly Plan</h4><div className="text-3xl font-extrabold text-white mb-4">$9.99<span className="text-sm font-normal text-slate-500">/mo</span></div><Link href="/pricing?plan=monthly" className="w-full"><Button className="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-xl py-6 font-bold">Subscribe Monthly</Button></Link></div>
           <div className="bg-slate-900 border-2 border-purple-500 rounded-2xl p-6 relative flex flex-col h-full text-left shadow-2xl shadow-purple-900/30 transform md:-translate-y-2"><div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-4 flex items-center justify-center gap-2"><Flame className="h-5 w-5 text-red-500 animate-pulse" /><span className="text-red-400 font-black text-sm uppercase tracking-wider">SAVE 50%</span></div><h4 className="text-xl font-bold text-purple-400 mb-2 flex items-center gap-2"><Sparkles className="h-5 w-5" /> Yearly Plan</h4><div className="flex items-end gap-2 mb-2"><div className="text-4xl font-extrabold text-white">$4.99<span className="text-sm font-normal text-slate-500">/mo</span></div><div className="text-lg font-bold text-slate-500 line-through mb-1.5">$9.99</div></div><Link href="/pricing?plan=yearly" className="w-full"><Button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl py-6 font-bold text-lg">Subscribe Yearly</Button></Link></div>
         </div>
+
+        {/* 👇 THE SECRET DIAGNOSTIC SCANNER BOX 👇 */}
+        <div className="mt-12 p-5 bg-red-950/80 border-2 border-red-500 rounded-xl text-red-300 text-sm font-mono text-left w-full max-w-3xl relative z-10 break-words shadow-lg shadow-red-900/50">
+          <div className="flex items-center justify-center gap-2 mb-3 border-b border-red-500/30 pb-3">
+            <AlertTriangle className="h-5 w-5 text-red-500" />
+            <span className="font-bold text-white uppercase tracking-wider text-base">System Diagnostic Scanner</span>
+          </div>
+          <div className="text-center">
+            {debugMsg}
+          </div>
+        </div>
+
       </div>
     );
   }
 
+  // 🟢 🔓 UNLOCKED TOOL RENDER
   return (
     <>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-4">
