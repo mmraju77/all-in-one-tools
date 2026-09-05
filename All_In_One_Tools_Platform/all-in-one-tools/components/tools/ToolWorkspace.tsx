@@ -187,31 +187,50 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
   const [userIsPro, setUserIsPro] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
+  // 🚀 RACE CONDITION FIXED: Added Real-time Listener exactly like Navbar
   useEffect(() => {
-    const verifyProStatus = async () => {
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user && user.email) {
-          const { data } = await supabase
-            .from("User")
-            .select("isPro")
-            .eq("email", user.email)
-            .single();
+    const supabase = createClient();
+    let isMounted = true;
 
-          if (data && (data.isPro === true || data.isPro === "true")) {
-            setUserIsPro(true);
-          }
+    const checkDatabaseForPro = async (userEmail: string) => {
+      try {
+        setIsCheckingStatus(true);
+        const { data } = await supabase
+          .from("User")
+          .select("isPro")
+          .eq("email", userEmail)
+          .single();
+
+        if (isMounted && data && (data.isPro === true || data.isPro === "true")) {
+          setUserIsPro(true);
         }
-      } catch (err) {
-        console.error("Auth check failed", err);
+      } catch (error) {
+        console.error("DB check failed", error);
       } finally {
-        setIsCheckingStatus(false);
+        if (isMounted) setIsCheckingStatus(false);
       }
     };
 
-    verifyProStatus();
+    // 1. Check immediately on load
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        checkDatabaseForPro(session.user.email);
+      } else {
+        if (isMounted) setIsCheckingStatus(false);
+      }
+    });
+
+    // 2. Listen for Auth State Changes (This guarantees it unlocks after login finishes loading)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user?.email) {
+        checkDatabaseForPro(session.user.email);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const updateFormState = (updates: Partial<HistorySnapshot>) => {
