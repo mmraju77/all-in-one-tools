@@ -184,11 +184,9 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
   const { input, dynamicValues } = history.present;
   const [activeAction, setActiveAction] = useState<string>("");
   
-  // Pro Status State
   const [userIsPro, setUserIsPro] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
-  // Exact auth connection matching your Navbar
   useEffect(() => {
     const verifyProStatus = async () => {
       try {
@@ -403,7 +401,6 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
     window.addEventListener('keydown', handleKeyDown); return () => window.removeEventListener('keydown', handleKeyDown);
   }, [history, isGenerating, language, currency, selectedFile, activeAction]); 
 
-  // UI 1: Loading
   if (isProTool && isCheckingStatus) {
     return (
       <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-8 lg:p-12 mb-12 max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden">
@@ -413,7 +410,6 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
     );
   }
 
-  // UI 2: Locked Screen (Clean UI without scanner)
   if (isProTool && !userIsPro) {
     return (
       <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-8 lg:p-12 mb-12 max-w-4xl mx-auto flex flex-col items-center text-center relative overflow-hidden">
@@ -429,7 +425,6 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
     );
   }
 
-  // UI 3: Unlocked Tool
   return (
     <>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-4">
