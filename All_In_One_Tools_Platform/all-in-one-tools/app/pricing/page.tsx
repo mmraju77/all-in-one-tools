@@ -1,18 +1,82 @@
 "use client";
 
-import { useState } from "react";
-import { Check, X, Sparkles, Flame, Zap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, X, Sparkles, Zap, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Script from "next/script";
+import { createClient } from "@/lib/supabase"; 
 
 export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  // Payment Success Automation (Database Update & Redirect)
+  useEffect(() => {
+    const handlePaymentSuccess = async () => {
+      setIsProcessing(true);
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // Update user to Pro in the database after payment
+        if (user && user.email) {
+          await supabase
+            .from("User")
+            .update({ isPro: true })
+            .eq("email", user.email);
+        }
+
+        // Show Success Popup after update
+        setIsProcessing(false);
+        setIsSuccess(true);
+
+        // Automatically redirect to categories page after 3.5 seconds
+        setTimeout(() => {
+          window.location.href = "/categories"; 
+        }, 3500);
+
+      } catch (error) {
+        console.error("Pro Update Error:", error);
+        setIsProcessing(false);
+      }
+    };
+
+    // Listen for the signal from the Paddle Script
+    window.addEventListener('paddle-checkout-success', handlePaymentSuccess);
+    return () => window.removeEventListener('paddle-checkout-success', handlePaymentSuccess);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#050b14] pt-24 pb-20 relative overflow-hidden">
       
-      {/* Paddle Payment Script - Initialized on Page Load */}
+      {/* SUCCESS POPUP ANIMATION */}
+      {isSuccess && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300 p-4">
+          <div className="bg-slate-900 border-2 border-emerald-500 rounded-3xl p-8 max-w-md w-full text-center shadow-[0_0_80px_rgba(16,185,129,0.3)] animate-in zoom-in-95 duration-500 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-emerald-600 animate-pulse"></div>
+            <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-emerald-500/20">
+              <Check className="h-12 w-12 text-emerald-400" />
+            </div>
+            <h2 className="text-3xl font-black text-white mb-3">Payment Successful! 🎉</h2>
+            <p className="text-slate-400 mb-8 text-base">Your account has been upgraded to Pro. All 10,000+ premium tools are now unlocked.</p>
+            <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold bg-emerald-500/10 py-3 px-4 rounded-xl">
+              <Loader2 className="h-5 w-5 animate-spin" /> Redirecting to Dashboard...
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Processing Loader */}
+      {isProcessing && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+          <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
+          <p className="text-white font-bold text-lg animate-pulse">Upgrading your workspace...</p>
+        </div>
+      )}
+
+      {/* Paddle Payment Script */}
       <Script 
         src="https://cdn.paddle.com/paddle/v2/paddle.js" 
         strategy="afterInteractive"
@@ -21,10 +85,10 @@ export default function PricingPage() {
             (window as any).Paddle.Environment.set("sandbox");
             (window as any).Paddle.Initialize({ 
               token: "test_b2f1904f50111af44079f9d565c",
-              // Redirect logic after successful payment
               eventCallback: function(data: any) {
+                // Send signal to our React code once payment is successful
                 if (data.name === "checkout.completed") {
-                  window.location.href = "/"; 
+                  window.dispatchEvent(new CustomEvent('paddle-checkout-success'));
                 }
               }
             });
@@ -122,7 +186,7 @@ export default function PricingPage() {
               }}
               className="w-full cursor-pointer"
             >
-              <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white border-0 transition-all">
+              <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white border-0 transition-all shadow-lg shadow-blue-900/30">
                 Upgrade to Pro &rarr;
               </Button>
             </div>
