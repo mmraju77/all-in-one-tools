@@ -187,43 +187,59 @@ export default function ToolWorkspace({ toolName = "Tool", slug = "", category =
   const [userIsPro, setUserIsPro] = useState(false);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
-  // 🚀 RACE CONDITION FIXED: Added Real-time Listener exactly like Navbar
+  // 🚀 ADMIN BYPASS + RELIABLE AUTH LISTENER
   useEffect(() => {
-    const supabase = createClient();
     let isMounted = true;
+    const supabase = createClient();
 
-    const checkDatabaseForPro = async (userEmail: string) => {
+    const verifyProStatus = async () => {
       try {
         setIsCheckingStatus(true);
-        const { data } = await supabase
-          .from("User")
-          .select("isPro")
-          .eq("email", userEmail)
-          .single();
+        const { data: { user } } = await supabase.auth.getUser();
 
-        if (isMounted && data && (data.isPro === true || data.isPro === "true")) {
-          setUserIsPro(true);
+        if (user && user.email) {
+          const email = user.email.toLowerCase();
+
+          // 🌟 DEVELOPER MASTER KEY: These emails will ALWAYS unlock the tool instantly
+          if (
+            email === "mmrajuomail999@gmail.com" || 
+            email === "mmraju7g@gmail.com" || 
+            email === "bhavaniraju171@gmail.com" || 
+            email === "jyothikumarigabbada@gmail.com"
+          ) {
+            if (isMounted) setUserIsPro(true);
+            if (isMounted) setIsCheckingStatus(false);
+            return;
+          }
+
+          // Normal Database Check for standard users
+          const { data } = await supabase
+            .from("User")
+            .select("*")
+            .eq("email", user.email)
+            .single();
+
+          // Handles both "isPro" and "ispro" case-sensitivity issues in Postgres
+          if (data && (data.isPro === true || data.ispro === true || String(data.isPro) === "true" || String(data.ispro) === "true")) {
+            if (isMounted) setUserIsPro(true);
+          }
         }
       } catch (error) {
-        console.error("DB check failed", error);
+        console.error("Auth check failed", error);
       } finally {
         if (isMounted) setIsCheckingStatus(false);
       }
     };
 
-    // 1. Check immediately on load
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user?.email) {
-        checkDatabaseForPro(session.user.email);
-      } else {
-        if (isMounted) setIsCheckingStatus(false);
-      }
-    });
+    // Run on initial page load
+    verifyProStatus();
 
-    // 2. Listen for Auth State Changes (This guarantees it unlocks after login finishes loading)
+    // Listen for Logins/Logouts dynamically
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user?.email) {
-        checkDatabaseForPro(session.user.email);
+      if (session?.user) {
+        verifyProStatus();
+      } else {
+        if (isMounted) setUserIsPro(false);
       }
     });
 
